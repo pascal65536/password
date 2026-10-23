@@ -309,7 +309,6 @@ return new Uint8Array(buf);
 }
 
 async function generatePassword(activeWords) {
-// 1. Объединяем слова по порядку, нормализуя каждое
 const combined = activeWords
 .map(w => w.trim().toLowerCase())
 .join('|');
@@ -331,15 +330,20 @@ return arr.join('');
 }
 
 async function handleGenerate() {
-const activeWords = [];
+const wordSlots = [];
+let activeWordsCount = 0;
 for (let i = 0; i < words.length; i++) {
-if (locks[i].checked) continue;
+if (locks[i].checked) {
+wordSlots.push('');
+continue;
+}
 const v = words[i].value.trim();
-if (v) activeWords.push(v);
+wordSlots.push(v);
+if (v) activeWordsCount++;
 }
 
-if (activeWords.length === 0) {
-passwordDisplay.textContent = 'Заполните ячейки или отключите их';
+if (activeWordsCount === 0) {
+passwordDisplay.textContent = 'Заполните хотя бы одно активное поле';
 passwordDisplay.classList.add('placeholder');
 actualLenEl.textContent = '—';
 copyOk.textContent = '';
@@ -347,7 +351,7 @@ return;
 }
 
 try {
-const password = await generatePassword(activeWords);
+const password = await generatePassword(wordSlots);
 passwordDisplay.textContent = password;
 passwordDisplay.classList.remove('placeholder');
 copyOk.textContent = '';
