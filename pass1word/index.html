@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор паролей</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='28' width='48' height='30' rx='6' fill='%23667eea'/%3E%3Cpath d='M20 28v-8a12 12 0 0 1 24 0v8' fill='none' stroke='%23667eea' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='43' r='4' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 20px;
+}
+
+.container {
+background: white;
+padding: 40px 30px;
+border-radius: 20px;
+max-width: 400px;
+width: 100%;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+text-align: center;
+color: #333;
+margin-bottom: 8px;
+font-size: 24px;
+}
+
+.subtitle {
+text-align: center;
+color: #888;
+font-size: 14px;
+margin-bottom: 30px;
+}
+
+label {
+display: block;
+font-weight: 600;
+color: #555;
+margin-bottom: 6px;
+font-size: 14px;
+}
+
+input[type="text"] {
+width: 100%;
+padding: 14px 16px;
+font-size: 16px;
+border: 2px solid #e0e0e0;
+border-radius: 12px;
+transition: border-color 0.3s;
+outline: none;
+background: #f8f9fa;
+}
+
+input[type="text"]:focus {
+border-color: #667eea;
+background: white;
+}
+
+button {
+width: 100%;
+padding: 16px;
+font-size: 18px;
+font-weight: 600;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+color: white;
+border: none;
+border-radius: 12px;
+cursor: pointer;
+transition: transform 0.2s, box-shadow 0.2s;
+margin-top: 10px;
+}
+
+button:hover {
+transform: translateY(-2px);
+box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+button:active {
+transform: translateY(0);
+}
+
+.result {
+margin-top: 24px;
+padding: 20px;
+background: #f8f9fa;
+border-radius: 12px;
+display: none;
+border: 2px solid #e0e0e0;
+}
+
+.result.show {
+display: block;
+animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+from {
+opacity: 0;
+transform: translateY(10px);
+}
+
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+.result-label {
+font-size: 13px;
+color: #888;
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-bottom: 10px;
+}
+
+.password-wrapper {
+background: white;
+padding: 12px 16px;
+border-radius: 8px;
+border: 1px dashed #ddd;
+margin-bottom: 16px;
+overflow-x: auto;
+white-space: nowrap;
+-webkit-overflow-scrolling: touch;
+}
+
+.password {
+font-size: 20px;
+font-weight: 700;
+color: #333;
+font-family: 'Courier New', monospace;
+letter-spacing: 0.5px;
+user-select: all;
+display: inline-block;
+}
+
+.copy-btn {
+background: #28a745;
+padding: 12px;
+font-size: 16px;
+border: none;
+border-radius: 10px;
+color: white;
+cursor: pointer;
+width: 100%;
+transition: background 0.2s;
+}
+
+.copy-btn:hover {
+background: #218838;
+}
+
+.copy-btn.copied {
+background: #17a2b8;
+}
+
+.site-hint {
+font-size: 12px;
+color: #999;
+margin-top: 4px;
+}
+
+.clear-btn {
+background: #6c757d;
+margin-top: 4px;
+font-size: 14px;
+padding: 10px;
+}
+
+.clear-btn:hover {
+background: #5a6268;
+box-shadow: none;
+transform: none;
+}
+
+footer {
+margin-top: 18px;
+text-align: center;
+font-size: 13px;
+color: rgba(255, 255, 255, .85);
+text-shadow: 0 1px 2px rgba(0, 0, 0, .2);
+}
+
+footer a {
+color: #fff;
+font-weight: 600;
+text-decoration: none;
+border-bottom: 1px dashed rgba(255, 255, 255, .5);
+}
+
+footer a:hover {
+border-bottom-style: solid;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>🔐 Генератор паролей</h1>
+<p class="subtitle">Введите адрес сайта для генерации</p>
+
+<label for="siteInput">🌐 Адрес сайта</label>
+<input type="text" id="siteInput" placeholder="example.com" autofocus>
+<div class="site-hint">Например: google.com, vk.com, github.com</div>
+
+<button id="generateBtn">🚀 Сгенерировать пароль</button>
+
+<div class="result" id="result">
+<div class="result-label">Сгенерированный пароль</div>
+<div class="password-wrapper">
+<span class="password" id="passwordDisplay"></span>
+</div>
+<button class="copy-btn" id="copyBtn">📋 Скопировать пароль</button>
+<button class="clear-btn" id="clearBtn">🔄 Очистить и начать заново</button>
+</div>
+</div>
+
+<footer>
+Pass1word · Автор: <a href="https://github.com/pascal65536/password" target="_blank" rel="noopener">pascal65536</a>
+</footer>
+
+<script>
+// Кодовая фраза
+const MASTER_PHRASE = 'Тут должна быть уникальная строка';
+
+// Наборы символов
+const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+const DIGITS = '0123456789';
+const SPECIAL = '!@#$%^&*()-_=+';
+const ALL = UPPER + LOWER + DIGITS + SPECIAL;
+
+// DOM элементы
+const siteInput = document.getElementById('siteInput');
+const generateBtn = document.getElementById('generateBtn');
+const resultDiv = document.getElementById('result');
+const passwordDisplay = document.getElementById('passwordDisplay');
+const copyBtn = document.getElementById('copyBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+async function sha256(message) {
+const encoder = new TextEncoder();
+const data = encoder.encode(message);
+const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+return new Uint8Array(hashBuffer);
+}
+
+async function generatePassword(site) {
+// Приводим к нижнему регистру и убираем все пробелы
+const cleanSite = site.toLowerCase().replace(/\s/g, '');
+const combined = MASTER_PHRASE + '|' + cleanSite;
+const hashArray = await sha256(combined);
+
+let password = '';
+for (let i = 0; i < 12; i++) {
+password += ALL[hashArray[i] % ALL.length];
+}
+
+password += UPPER[hashArray[12] % UPPER.length];   // Заглавная
+password += LOWER[hashArray[13] % LOWER.length];   // Строчная
+password += DIGITS[hashArray[14] % DIGITS.length]; // Цифра
+password += SPECIAL[hashArray[15] % SPECIAL.length]; // Спецсимвол
+
+let result = password.split('');
+for (let i = result.length - 1; i > 0; i--) {
+const j = hashArray[16 + i] % (i + 1);
+[result[i], result[j]] = [result[j], result[i]];
+}
+
+return result.join('');
+}
+
+async function handleGenerate() {
+let site = siteInput.value.trim();
+
+if (!site) {
+site = prompt('Введите адрес сайта (например: google.com):');
+if (!site) return;
+site = site.trim();
+siteInput.value = site;
+}
+
+try {
+const password = await generatePassword(site);
+passwordDisplay.textContent = password;
+resultDiv.classList.add('show');
+copyBtn.textContent = '📋 Скопировать пароль';
+copyBtn.className = 'copy-btn';
+} catch (error) {
+alert('Ошибка генерации: ' + error.message);
+}
+}
+
+async function handleCopy() {
+const password = passwordDisplay.textContent;
+if (!password) return;
+
+try {
+await navigator.clipboard.writeText(password);
+copyBtn.textContent = '✅ Скопировано!';
+copyBtn.className = 'copy-btn copied';
+setTimeout(() => {
+copyBtn.textContent = '📋 Скопировать пароль';
+copyBtn.className = 'copy-btn';
+}, 2000);
+} catch (err) {
+// Fallback для старых браузеров
+const range = document.createRange();
+range.selectNode(passwordDisplay);
+window.getSelection().removeAllRanges();
+window.getSelection().addRange(range);
+document.execCommand('copy');
+alert('Пароль скопирован!');
+}
+}
+
+function handleClear() {
+siteInput.value = '';
+resultDiv.classList.remove('show');
+siteInput.focus();
+}
+
+generateBtn.addEventListener('click', handleGenerate);
+copyBtn.addEventListener('click', handleCopy);
+clearBtn.addEventListener('click', handleClear);
+
+siteInput.addEventListener('keydown', (e) => {
+if (e.key === 'Enter') {
+e.preventDefault();
+handleGenerate();
+}
+});
+
+siteInput.focus();
+</script>
+</body>
+
+</html>

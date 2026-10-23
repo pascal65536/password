@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pass3words: Генератор паролей</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='28' width='48' height='30' rx='6' fill='%23667eea'/%3E%3Cpath d='M20 28v-8a12 12 0 0 1 24 0v8' fill='none' stroke='%23667eea' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='43' r='4' fill='%23fff'/%3E%3C/svg%3E">
+
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 20px;
+}
+
+.container {
+background: white;
+padding: 32px 28px;
+border-radius: 20px;
+max-width: 440px;
+width: 100%;
+box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+}
+
+h1 {
+text-align: center;
+color: #333;
+margin-bottom: 6px;
+font-size: 22px;
+}
+
+.subtitle {
+text-align: center;
+color: #888;
+font-size: 13px;
+margin-bottom: 22px;
+}
+
+.field {
+margin-bottom: 12px;
+}
+
+.field-row {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.field-row input[type="text"] {
+flex: 1;
+padding: 12px 14px;
+font-size: 15px;
+border: 2px solid #e0e0e0;
+border-radius: 12px;
+outline: none;
+background: #f8f9fa;
+transition: border-color .2s, background .2s;
+}
+
+.field-row input[type="text"]:focus {
+border-color: #667eea;
+background: white;
+}
+
+.field-row input[type="text"]:disabled {
+background: #eee;
+color: #aaa;
+cursor: not-allowed;
+text-decoration: line-through;
+}
+
+.field-row label.lock {
+display: flex;
+align-items: center;
+gap: 4px;
+font-size: 12px;
+color: #666;
+cursor: pointer;
+user-select: none;
+padding: 6px 8px;
+border-radius: 8px;
+background: #f0f0f0;
+white-space: nowrap;
+}
+
+.field-row label.lock:hover {
+background: #e4e4e4;
+}
+
+.field-row input[type="checkbox"] {
+width: 16px;
+height: 16px;
+cursor: pointer;
+}
+
+button.main {
+width: 100%;
+padding: 14px;
+font-size: 16px;
+font-weight: 700;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+color: white;
+border: none;
+border-radius: 12px;
+cursor: pointer;
+transition: transform .15s, box-shadow .15s;
+margin-top: 4px;
+}
+
+button.main:hover {
+transform: translateY(-2px);
+box-shadow: 0 8px 25px rgba(102, 126, 234, .4);
+}
+
+button.main:active {
+transform: translateY(0);
+}
+
+button.secondary {
+width: 100%;
+padding: 11px;
+font-size: 14px;
+font-weight: 600;
+background: #f0f0f0;
+color: #444;
+border: none;
+border-radius: 10px;
+cursor: pointer;
+margin-top: 8px;
+}
+
+button.secondary:hover {
+background: #e4e4e4;
+}
+
+.info {
+font-size: 13px;
+color: #666;
+margin-top: 10px;
+display: flex;
+justify-content: space-between;
+flex-wrap: wrap;
+gap: 6px;
+}
+
+.info b {
+color: #333;
+}
+
+.result {
+margin-top: 16px;
+}
+
+.result-label {
+font-size: 12px;
+color: #888;
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-bottom: 8px;
+}
+
+.password-wrapper {
+background: #f8f9fa;
+padding: 16px;
+border-radius: 10px;
+border: 2px dashed #ccc;
+margin-bottom: 12px;
+word-break: break-all;
+line-height: 1.5;
+font-size: 22px;
+font-weight: 700;
+color: #333;
+font-family: 'Courier New', monospace;
+user-select: all;
+text-align: center;
+letter-spacing: 1px;
+min-height: 60px;
+}
+
+.password-wrapper.placeholder {
+color: #aaa;
+font-weight: 400;
+font-size: 15px;
+}
+
+.copy-ok {
+font-size: 13px;
+color: #28a745;
+font-weight: 600;
+text-align: center;
+min-height: 18px;
+margin-top: 6px;
+}
+
+footer {
+margin-top: 18px;
+text-align: center;
+font-size: 13px;
+color: rgba(255, 255, 255, .85);
+text-shadow: 0 1px 2px rgba(0, 0, 0, .2);
+}
+
+footer a {
+color: #fff;
+font-weight: 600;
+text-decoration: none;
+border-bottom: 1px dashed rgba(255, 255, 255, .5);
+}
+
+footer a:hover {
+border-bottom-style: solid;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>🔐 Pass3words</h1>
+<p class="subtitle">Запомни три слова вместо сложного пароля</p>
+
+<div class="field">
+<div class="field-row">
+<input type="text" id="word1" placeholder="Слово 1" autocomplete="off">
+<label class="lock"><input type="checkbox" id="lock1"> 🔒</label>
+</div>
+</div>
+
+<div class="field">
+<div class="field-row">
+<input type="text" id="word2" placeholder="Слово 2" autocomplete="off">
+<label class="lock"><input type="checkbox" id="lock2"> 🔒</label>
+</div>
+</div>
+
+<div class="field">
+<div class="field-row">
+<input type="text" id="word3" placeholder="Слово 3" autocomplete="off">
+<label class="lock"><input type="checkbox" id="lock3"> 🔒</label>
+</div>
+</div>
+
+<button class="main" id="generateBtn">🚀 Сгенерировать пароль</button>
+<button class="secondary" id="clearBtn">🔄 Очистить</button>
+
+<div class="info">
+<span>Планируемая длина: <b id="plannedLen">—</b></span>
+<span>Фактическая длина: <b id="actualLen">—</b></span>
+</div>
+
+<div class="result">
+<div class="result-label">Ваш пароль</div>
+<div class="password-wrapper placeholder" id="passwordDisplay">Пароль появится здесь</div>
+<button class="main" id="copyBtn">📋 Скопировать</button>
+<div class="copy-ok" id="copyOk"></div>
+</div>
+</div>
+
+<footer>
+Pass3words · Автор: <a href="https://github.com/pascal65536/password" target="_blank" rel="noopener">pascal65536</a>
+</footer>
+
+<script>
+const words = [
+document.getElementById('word1'),
+document.getElementById('word2'),
+document.getElementById('word3')
+];
+const locks = [
+document.getElementById('lock1'),
+document.getElementById('lock2'),
+document.getElementById('lock3')
+];
+
+const generateBtn = document.getElementById('generateBtn');
+const clearBtn = document.getElementById('clearBtn');
+const copyBtn = document.getElementById('copyBtn');
+const passwordDisplay = document.getElementById('passwordDisplay');
+const copyOk = document.getElementById('copyOk');
+const plannedLenEl = document.getElementById('plannedLen');
+const actualLenEl = document.getElementById('actualLen');
+
+const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+const DIGITS = '0123456789';
+const SPECIAL = '!@#$%^&*()-_=+';
+const ALL = UPPER + LOWER + DIGITS + SPECIAL;
+
+const PASSWORD_LENGTH = 16;
+
+plannedLenEl.textContent = PASSWORD_LENGTH;
+
+async function sha256(message) {
+const data = new TextEncoder().encode(message);
+const buf = await crypto.subtle.digest('SHA-256', data);
+return new Uint8Array(buf);
+}
+
+async function generatePassword(activeWords) {
+// 1. Объединяем слова по порядку, нормализуя каждое
+const combined = activeWords
+.map(w => w.trim().toLowerCase())
+.join('|');
+
+const hash = await sha256(combined);
+
+let password = '';
+for (let i = 0; i < PASSWORD_LENGTH; i++) {
+password += ALL[hash[i] % ALL.length];
+}
+
+let arr = password.split('');
+arr[PASSWORD_LENGTH - 4] = UPPER[hash[PASSWORD_LENGTH - 4] % UPPER.length];
+arr[PASSWORD_LENGTH - 3] = LOWER[hash[PASSWORD_LENGTH - 3] % LOWER.length];
+arr[PASSWORD_LENGTH - 2] = DIGITS[hash[PASSWORD_LENGTH - 2] % DIGITS.length];
+arr[PASSWORD_LENGTH - 1] = SPECIAL[hash[PASSWORD_LENGTH - 1] % SPECIAL.length];
+
+return arr.join('');
+}
+
+async function handleGenerate() {
+const activeWords = [];
+for (let i = 0; i < words.length; i++) {
+if (locks[i].checked) continue;
+const v = words[i].value.trim();
+if (v) activeWords.push(v);
+}
+
+if (activeWords.length === 0) {
+passwordDisplay.textContent = 'Заполните ячейки или отключите их';
+passwordDisplay.classList.add('placeholder');
+actualLenEl.textContent = '—';
+copyOk.textContent = '';
+return;
+}
+
+try {
+const password = await generatePassword(activeWords);
+passwordDisplay.textContent = password;
+passwordDisplay.classList.remove('placeholder');
+copyOk.textContent = '';
+actualLenEl.textContent = password.length;
+} catch (e) {
+passwordDisplay.textContent = 'Ошибка: ' + e.message;
+passwordDisplay.classList.add('placeholder');
+actualLenEl.textContent = '—';
+}
+}
+
+async function handleCopy() {
+const pwd = passwordDisplay.textContent;
+if (!pwd || passwordDisplay.classList.contains('placeholder')) return;
+try {
+await navigator.clipboard.writeText(pwd);
+copyOk.textContent = '✅ Скопировано в буфер обмена';
+} catch {
+const range = document.createRange();
+range.selectNodeContents(passwordDisplay);
+const sel = window.getSelection();
+sel.removeAllRanges();
+sel.addRange(range);
+copyOk.textContent = 'Выделено — нажмите Ctrl+C';
+}
+}
+
+function handleClear() {
+words.forEach(w => w.value = '');
+locks.forEach(l => l.checked = false);
+words.forEach(w => w.disabled = false);
+passwordDisplay.textContent = 'Пароль появится здесь';
+passwordDisplay.classList.add('placeholder');
+actualLenEl.textContent = '—';
+copyOk.textContent = '';
+words[0].focus();
+}
+
+locks.forEach((lock, i) => {
+lock.addEventListener('change', () => {
+words[i].disabled = lock.checked;
+});
+});
+
+generateBtn.addEventListener('click', handleGenerate);
+copyBtn.addEventListener('click', handleCopy);
+clearBtn.addEventListener('click', handleClear);
+words.forEach(el => el.addEventListener('keydown', e => {
+if (e.key === 'Enter') handleGenerate();
+}));
+
+words[0].focus();
+</script>
+</body>
+
+</html>
